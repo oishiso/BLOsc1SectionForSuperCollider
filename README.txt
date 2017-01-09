@@ -1,4 +1,14 @@
 The mechanism of this UGen is explained in “Additive synthesis with band-limited oscillator sections”, Peter Pabon & So Oishi, ICMC 2016.
+http://www.icmc2016.com/proceedings.pdf#page=31
+
+============================
+
+SuperCollider UGen “BLOsc1section”:
+
+This is the simple Band-Limited Oscillator UGen that can have only 1 frequency band. This is much less CPU-demanding than “BLOsc4sections.”
+
+See demo video at:
+http://sooishi.com/engineering/
 
 ============================
 
@@ -83,3 +93,4 @@ This program is free software: you can redistribute it and/or modify it under th
 Author:
 
 So Oishi<oishiso@gmail.com>
+sooishi.com
