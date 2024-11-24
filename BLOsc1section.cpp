@@ -1,5 +1,10 @@
 #include "SC_PlugIn.h"
-#include <tgmath.h>
+#include <cmath>
+#include <complex>  // std::complexを使用するために必要
+using std::pow;
+using std::exp;
+using std::complex;
+
 
 using namespace std;
 
@@ -232,7 +237,7 @@ float hiHarmonicsFracCurrent1 = unit->hiHarmonicsFracCurrent1 == 0.0f? hiHarmoni
 
 
 LOOP(inNumSamples,
-  
+{ 
 complex<float> baseOsc = exp(complex<float>(0.0f, phaseCurrent));
 
 
@@ -258,30 +263,38 @@ hiHarmonicsFrac1 = hiHarmonics1 - hiHarmonicsInt1;
 if (hiHarmonicsIntCurrent1 == hiHarmonicsInt1) hiHarmonicsFracCurrent1 = hiHarmonicsFrac1;
 
 signalR1 = oneBlock_calc(baseOsc, phaseCurrent, slope1, evenOddRatio1, spreadCurrent1, spreadCompensation, loHarmonicsIntCurrent1, hiHarmonicsIntCurrent1, loHarmonicsFracCurrent1, hiHarmonicsFracCurrent1);
-;
+
 
 float omega;
-if (unit->freqRate == 0) freq = ZXP(freqIn);
-omega = freq * unit->partialOmega;
-// phase increment per sample at given frequency
-
-  phaseCurrent += omega;
-  while (phaseCurrent >= twopi_f){
-    phaseCurrent -= twopi_f;
-
-   /* Section 1 */
-    if (loHarmonicsInt1 != loHarmonicsIntCurrent1) loHarmonicsIntCurrent1 = loHarmonicsInt1;
-    // Change loHarmonicsInt value when phase crosses 2pi 
-
-    if (hiHarmonicsInt1 != hiHarmonicsIntCurrent1) hiHarmonicsIntCurrent1 = hiHarmonicsInt1;
-    // Change hiHarmonicsInt value when phase crosses 2pi 
-
-    if (static_cast<float>(spreadIn1) != spreadCurrent1) spreadCurrent1 = static_cast<float>(spreadIn1);
-    // Change spread value when phase crosses 2pi
-
+if (unit->freqRate == 0) {
+    freq = ZXP(freqIn);
 }
-  ZXP(out) = signalR1;
-  )
+
+omega = freq * unit->partialOmega; // 周波数に基づくサンプルごとの位相増分
+
+// 位相を正規化
+float previousPhase = phaseCurrent;
+phaseCurrent = fmod(phaseCurrent + omega, twopi_f);
+
+// 位相が2πを超えた場合のみ処理
+if (phaseCurrent < previousPhase) { 
+    // Section 1 の処理
+    if (loHarmonicsInt1 != loHarmonicsIntCurrent1) {
+        loHarmonicsIntCurrent1 = loHarmonicsInt1; // loHarmonicsInt を更新
+    }
+
+    if (hiHarmonicsInt1 != hiHarmonicsIntCurrent1) {
+        hiHarmonicsIntCurrent1 = hiHarmonicsInt1; // hiHarmonicsInt を更新
+    }
+
+    if (static_cast<float>(spreadIn1) != spreadCurrent1) {
+        spreadCurrent1 = static_cast<float>(spreadIn1); // spread を更新
+    }
+}
+
+// 出力に信号を書き込む
+ZXP(out) = signalR1;
+});
 
 unit->phaseCurrent = phaseCurrent;
 
